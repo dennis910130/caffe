@@ -39,8 +39,9 @@ void BaseDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     data_mean_.FromProto(blob_proto);
     CHECK_GE(data_mean_.num(), 1);
     CHECK_GE(data_mean_.channels(), datum_channels_);
-    CHECK_GE(data_mean_.height(), datum_height_);
-    CHECK_GE(data_mean_.width(), datum_width_);
+	//when in crop mode, the data_mean isn't necessarily greater than or equal to datum size (which varies from image to image) 
+    //CHECK_GE(data_mean_.height(), datum_height_);
+    //CHECK_GE(data_mean_.width(), datum_width_);
   } else {
     // Simply initialize an all-empty mean.
     data_mean_.Reshape(1, datum_channels_, datum_height_, datum_width_);

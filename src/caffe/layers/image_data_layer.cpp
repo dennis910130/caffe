@@ -101,21 +101,36 @@ void ImageDataLayer<Dtype>::InternalThreadEntry() {
   const int batch_size = image_data_param.batch_size();
   const int new_height = image_data_param.new_height();
   const int new_width = image_data_param.new_width();
+  const int smaller_size = image_data_param.smaller_size();
 
   // datum scales
   const int lines_size = lines_.size();
   for (int item_id = 0; item_id < batch_size; ++item_id) {
     // get a blob
     CHECK_GT(lines_size, lines_id_);
-    if (!ReadImageToDatum(lines_[lines_id_].first,
-          lines_[lines_id_].second,
-          new_height, new_width, &datum)) {
-      continue;
-    }
+	if (this->layer_param_.image_data_param().crop_mode()) {
+		if (!ReadImageToDatum(lines_[lines_id_].first, 
+			lines_[lines_id_].second, 
+			smaller_size, &datum)) {
+			continue;
+		}
+	}
+	else {
+		if (!ReadImageToDatum(lines_[lines_id_].first,
+			lines_[lines_id_].second,
+			new_height, new_width, &datum)) {
+			continue;
+		}
+	}
 
     // Apply transformations (mirror, crop...) to the data
-    this->data_transformer_.Transform(item_id, datum, this->mean_, top_data);
-
+	//based on which mode you are in
+	if (this->layer_param_.image_data_param().crop_mode()) {
+		this->data_transformer_.TransformCropMode(item_id, datum, this->mean_, top_data);
+	}
+	else {
+		this->data_transformer_.Transform(item_id, datum, this->mean_, top_data);
+	}
     top_label[item_id] = datum.label();
     // go to the next iter
     lines_id_++;

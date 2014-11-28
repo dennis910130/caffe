@@ -376,6 +376,48 @@ def _Net_batch(self, blobs):
                                                  padding])
         yield padded_batch
 
+def _Net_extract_features(self, input_name, img_name, smaller_size = None):
+    im = caffe.io.load_image(img_name)
+    if smaller_size == None:
+        if im.shape[0] < 227 or im.shape[1] < 227:
+            smaller_size = 227
+        else:
+            new_size = [im.shape[0], im.shape[1]]
+    if smaller_size != None:
+
+        smaller_size = smaller_size + 0.0
+        if im.shape[0] < im.shape[1]:
+            ratio = smaller_size/im.shape[0]
+        else:
+            ratio = smaller_size/im.shape[1]
+        new_size = [int(round(im.shape[0]*ratio)), int(round(im.shape[1]*ratio))]
+    
+    self.reshape(1,3,new_size[0],new_size[1])
+    mean = self.mean.get(input_name) 
+    in_shape = self.blobs[input_name].data.shape
+    
+    self.mean[input_name] = mean
+
+    caffe_in = im.astype(np.float32)
+    input_scale = self.input_scale.get(input_name)
+    raw_scale = self.raw_scale.get(input_name)
+    channel_order = self.channel_swap.get(input_name)
+	
+    in_size = self.blobs[input_name].data.shape[2:]
+    if caffe_in.shape[:2] != in_size:
+        caffe_in = caffe.io.resize_image(caffe_in,in_size)
+
+    if channel_order:
+        caffe_in = caffe_in[:,:,channel_order]
+    caffe_in = caffe_in.transpose((2,0,1))
+    if raw_scale is not None:
+        caffe_in *= raw_scale
+    if mean is not None:
+        caffe_in -= mean
+    if input_scale is not None:
+        caffe_in *= input_scale	
+    out = self.forward_all(data=np.asarray([caffe_in]))
+    return out
 
 # Attach methods to Net.
 Net.blobs = _Net_blobs
@@ -392,3 +434,4 @@ Net.preprocess = _Net_preprocess
 Net.deprocess = _Net_deprocess
 Net.set_input_arrays = _Net_set_input_arrays
 Net._batch = _Net_batch
+Net.extract_features = _Net_extract_features

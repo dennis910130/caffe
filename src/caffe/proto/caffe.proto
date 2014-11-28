@@ -522,6 +522,8 @@ message ImageDataParameter {
   // DEPRECATED. See TransformationParameter. Specify if we want to randomly mirror
   // data.
   optional bool mirror = 6 [default = false];
+  optional bool crop_mode = 11 [default = false];
+  optional uint32 smaller_size = 12 [default = 0];
 }
 
 // Message that stores parameters InfogainLossLayer
