@@ -26,9 +26,15 @@ void BaseDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK_GT(datum_channels_, 0);
   CHECK_GT(datum_height_, 0);
   CHECK_GT(datum_width_, 0);
+  
   if (transform_param_.crop_size() > 0) {
-    CHECK_GE(datum_height_, transform_param_.crop_size());
-    CHECK_GE(datum_width_, transform_param_.crop_size());
+    if (this->layer_param_.image_data_param().crop_mode()) {
+      CHECK_GE(this->layer_param_.image_data_param().smaller_size(), transform_param_.crop_size());
+    }
+    else {
+      CHECK_GE(datum_height_, transform_param_.crop_size());
+      CHECK_GE(datum_width_, transform_param_.crop_size());
+    }
   }
   // check if we want to have mean
   if (transform_param_.has_mean_file()) {
