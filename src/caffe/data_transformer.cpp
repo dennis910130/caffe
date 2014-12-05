@@ -96,7 +96,7 @@ void DataTransformer<Dtype>::TransformCropMode(const int batch_item_id,
   const int height = datum.height();
   const int width = datum.width();
   const int size = datum.channels() * datum.height() * datum.width();
-
+  //LOG(ERROR) << "debug information for datum:" << channels << " " << height << " " << width << " " << datum.label();
   const int crop_size = param_.crop_size();
   const bool mirror = param_.mirror();
   const Dtype scale = param_.scale();
@@ -113,6 +113,7 @@ void DataTransformer<Dtype>::TransformCropMode(const int batch_item_id,
     if (phase_ == Caffe::TRAIN) {
       h_off = Rand() % (height - crop_size);
       w_off = Rand() % (width - crop_size);
+     // LOG(ERROR) << "debug information for offsets:" << h_off << " " << w_off;
     } else {
       h_off = (height - crop_size) / 2;
       w_off = (width - crop_size) / 2;
